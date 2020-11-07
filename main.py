@@ -21,7 +21,7 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 
 def add_gauge(gauge: Gauge):
     def inner():
-        value = request.args.get("value", 1)
+        value = int(request.args.get("value", 1))
         if request.method == "POST":
             gauge.inc(value)
         elif request.method == "DELETE":
@@ -38,7 +38,7 @@ def add_gauge(gauge: Gauge):
 
 def add_counter(counter: Counter):
     def inner():
-        value = request.args.get("value", 1)
+        value = int(request.args.get("value", 1))
         counter.inc(value)
         return ""
 
@@ -50,7 +50,7 @@ def add_counter(counter: Counter):
 
 add_gauge(spawned_pokemons)
 add_counter(messages)
-add_counter(commands_used_total)
-add_counter(commands_used_catch)
+add_gauge(commands_used_total)
+add_gauge(commands_used_catch)
 
 serve(app, port=5050)
