@@ -10,8 +10,8 @@ from string import ascii_letters
 
 spawned_pokemons = Gauge("spawned_pokemons", "Pokemons being spawned")
 messages = Counter("messages", "Messages sent to the bot")
-commands_used_total = Counter("commands_used_total", "Command used (total)")
-commands_used_catch = Counter("commands_used_catch", "Command used (catch)")
+commands_used_total = Gauge("commands_used_total", "Command used (total)")
+commands_used_catch = Gauge("commands_used_catch", "Command used (catch)")
 
 app = Flask(__name__)
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
@@ -24,14 +24,16 @@ def add_gauge(gauge: Gauge):
         value = request.args.get("value", 1)
         if request.method == "POST":
             gauge.inc(value)
-        else:
+        elif request.method == "DELETE":
             gauge.dec(value)
+        elif request.method == "PATCH":
+            gauge.set(value)
         return ""
 
     # Fuck you flask.
     uid = "".join([choice(ascii_letters) for i in range(10)])
     inner.__name__ = uid
-    app.route(f"/api/{gauge._name}", methods=["POST", "DELETE"])(inner)
+    app.route(f"/api/{gauge._name}", methods=["POST", "PATCH", "DELETE"])(inner)
 
 
 def add_counter(counter: Counter):
