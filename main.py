@@ -8,10 +8,10 @@ from waitress import serve
 from random import choice
 from string import ascii_letters
 
-spawned_pokemons = Gauge("spawned_pokemons", "Pokemons being spawned")
-messages = Counter("messages", "Messages sent to the bot")
-commands_used_total = Gauge("commands_used_total", "Command used (total)")
-commands_used_catch = Gauge("commands_used_catch", "Command used (catch)")
+spawned_pokemons = Gauge("current_spawned_pokemons", "Pokemons being spawned (current)")
+messages = Counter("total_messages", "Messages sent to the bot (total)")
+commands_used_total = Gauge("current_commands_used_total", "Command used (total) (current)")
+commands_used_catch = Gauge("current_commands_used_catch", "Command used (catch) (current)")
 
 app = Flask(__name__)
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
