@@ -12,6 +12,7 @@ spawned_pokemons = Gauge("current_spawned_pokemons", "Pokemons being spawned (cu
 messages = Gauge("current_messages", "Messages sent to the bot (current)")
 commands_used_total = Gauge("current_commands_used_total", "Command used (total) (current)")
 commands_used_catch = Gauge("current_commands_used_catch", "Command used (catch) (current)")
+active_users = Gauge("current_active_users", "How many unique users are using the bot (current)")
 
 app = Flask(__name__)
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
@@ -49,8 +50,9 @@ def add_counter(counter: Counter):
 
 
 add_gauge(spawned_pokemons)
-add_counter(messages)
+add_gauge(messages)
 add_gauge(commands_used_total)
 add_gauge(commands_used_catch)
+add_gauge(active_users)
 
 serve(app, port=5050)
