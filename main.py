@@ -9,7 +9,7 @@ from random import choice
 from string import ascii_letters
 
 spawned_pokemons = Gauge("current_spawned_pokemons", "Pokemons being spawned (current)")
-messages = Counter("total_messages", "Messages sent to the bot (total)")
+messages = Gauge("current_messages", "Messages sent to the bot (current)")
 commands_used_total = Gauge("current_commands_used_total", "Command used (total) (current)")
 commands_used_catch = Gauge("current_commands_used_catch", "Command used (catch) (current)")
 
