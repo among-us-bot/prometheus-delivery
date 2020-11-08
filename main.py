@@ -28,6 +28,7 @@ def update_stats(name):
         metric.inc(value)
     elif request.method == "PATCH":
         metric.set(value)
+    return ""
 
 
 serve(app, port=5050)
