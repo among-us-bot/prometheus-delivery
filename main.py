@@ -1,18 +1,13 @@
 """
 Created by Epic at 11/7/20
 """
-from flask import Flask, request, Request
+from flask import Flask, request
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from prometheus_client import make_wsgi_app, Gauge, Counter
+from prometheus_client import make_wsgi_app, Gauge
 from waitress import serve
-from random import choice
-from string import ascii_letters
 
-spawned_pokemons = Gauge("current_spawned_pokemons", "Pokemons being spawned (current)")
-messages = Gauge("current_messages", "Messages sent to the bot (current)")
-commands_used_total = Gauge("current_commands_used_total", "Command used (total) (current)")
-commands_used_catch = Gauge("current_commands_used_catch", "Command used (catch) (current)")
-active_users = Gauge("current_active_users", "How many unique users are using the bot (current)")
+metrics = {}
+
 
 app = Flask(__name__)
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
@@ -20,39 +15,19 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 })
 
 
-def add_gauge(gauge: Gauge):
-    def inner():
-        value = int(request.args.get("value", 1))
-        if request.method == "POST":
-            gauge.inc(value)
-        elif request.method == "DELETE":
-            gauge.dec(value)
-        elif request.method == "PATCH":
-            gauge.set(value)
-        return ""
+@app.route("/api/<string:name>", methods=["DELETE", "POST", "PATCH"])
+def update_stats(name):
+    metric = metrics.get(name, None)
+    value = int(request.args.get("value", 1))
+    if metric is None:
+        metric = Gauge(name, name)
+        metrics[name] = metric
+    if request.method == "DELETE":
+        metric.dec(value)
+    elif request.method == "POST":
+        metric.inc(value)
+    elif request.method == "PATCH":
+        metric.set(value)
 
-    # Fuck you flask.
-    uid = "".join([choice(ascii_letters) for i in range(10)])
-    inner.__name__ = uid
-    app.route(f"/api/{gauge._name}", methods=["POST", "PATCH", "DELETE"])(inner)
-
-
-def add_counter(counter: Counter):
-    def inner():
-        value = int(request.args.get("value", 1))
-        counter.inc(value)
-        return ""
-
-    # Fuck you flask.
-    uid = "".join([choice(ascii_letters) for i in range(10)])
-    inner.__name__ = uid
-    app.route(f"/api/{counter._name}", methods=["POST"])(inner)
-
-
-add_gauge(spawned_pokemons)
-add_gauge(messages)
-add_gauge(commands_used_total)
-add_gauge(commands_used_catch)
-add_gauge(active_users)
 
 serve(app, port=5050)
