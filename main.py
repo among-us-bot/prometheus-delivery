@@ -15,7 +15,7 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 })
 
 
-@app.route("/api/<string:name>", methods=["DELETE", "POST", "PATCH"])
+@app.route("/api/<string:name>/gauge", methods=["DELETE", "POST", "PATCH"])
 def update_stats(name):
     metric = metrics.get(name, None)
     value = int(request.args.get("value", 1))
