@@ -3,19 +3,14 @@ Created by Epic at 11/7/20
 """
 from flask import Flask, request
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from prometheus_client import make_wsgi_app, Gauge, Counter
+from prometheus_client import make_wsgi_app, Gauge, Counter, Histogram
 from waitress import serve
-
-
-class ResettingMetric(Gauge):
-    pass
-
 
 metrics = {}
 analytic_types = {
     "gauge": Gauge,
     "counter": Counter,
-    "resetting": ResettingMetric
+    "histogram": Histogram
 }
 
 app = Flask(__name__)
@@ -37,6 +32,9 @@ def update_stats(name, analytic_type):
     if request.method == "DELETE":
         metric.dec(value)
     elif request.method == "POST":
+        if isinstance(metric, Histogram):
+            metric.observe(value)
+            return ""
         metric.inc(value)
     elif request.method == "PATCH":
         metric.set(value)
