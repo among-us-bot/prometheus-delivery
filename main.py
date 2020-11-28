@@ -1,10 +1,12 @@
 """
 Created by Epic at 11/7/20
 """
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_client import make_wsgi_app, Gauge, Counter, Histogram
 from waitress import serve
+from requests import get
+from os import environ as env
 
 metrics = {}
 analytic_types = {
@@ -39,6 +41,11 @@ def update_stats(name, analytic_type):
     elif request.method == "PATCH":
         metric.set(value)
     return ""
+
+
+@app.route("/api/query")
+def query():
+    return jsonify(get(f"http://{env['PROMETHEUS_HOST']}:9090/api/v1/query_range", params=request.args).json())
 
 
 serve(app, port=5050)
